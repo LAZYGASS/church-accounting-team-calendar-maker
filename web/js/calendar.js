@@ -268,12 +268,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const yearSelect = document.getElementById('year-select');
     const generateBtn = document.getElementById('generate-btn');
 
+    // 현재 연도 가져오기
+    const currentYear = new Date().getFullYear();
+
+    // 연도 드롭다운 동적 생성 (현재 연도 ± 5년)
+    yearSelect.innerHTML = '';
+    for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) {
+            option.selected = true;
+        }
+        yearSelect.appendChild(option);
+    }
+
     // 생성 버튼 클릭
     generateBtn.addEventListener('click', function () {
         const year = parseInt(yearSelect.value);
         generateAllCalendars(year);
     });
 
-    // 초기 로드 시 2026년 캘린더 생성
-    generateAllCalendars(2026);
+    // 초기 로드 시 현재 연도 캘린더 자동 생성
+    generateAllCalendars(currentYear);
 });
