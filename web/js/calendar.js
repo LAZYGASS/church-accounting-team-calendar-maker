@@ -48,7 +48,7 @@ function getApprovalDays(year, month, executionDays) {
 
 /**
  * 운영위원회 날짜 계산
- * - 3월, 4월: 마지막주 일요일
+ * - 2026년 3월, 4월: 마지막주 일요일 (특이사항)
  * - 나머지: 마지막주 전주 일요일
  */
 function getCommitteeDay(year, month) {
@@ -69,8 +69,8 @@ function getCommitteeDay(year, month) {
         return null;
     }
 
-    // 3월, 4월: 마지막주 일요일
-    if (month === 3 || month === 4) {
+    // 2026년 3월, 4월만 마지막주 일요일
+    if (year === 2026 && (month === 3 || month === 4)) {
         return lastSunday;
     }
 
