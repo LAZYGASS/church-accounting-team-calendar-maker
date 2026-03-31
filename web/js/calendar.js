@@ -48,7 +48,7 @@ function getApprovalDays(year, month, executionDays) {
 
 /**
  * 운영위원회 날짜 계산
- * - 4월: 마지막주 일요일
+ * - 3월, 4월: 마지막주 일요일
  * - 나머지: 마지막주 전주 일요일
  */
 function getCommitteeDay(year, month) {
@@ -69,8 +69,8 @@ function getCommitteeDay(year, month) {
         return null;
     }
 
-    // 4월: 마지막주 일요일
-    if (month === 4) {
+    // 3월, 4월: 마지막주 일요일
+    if (month === 3 || month === 4) {
         return lastSunday;
     }
 
@@ -207,7 +207,7 @@ function generateCalendar(year, month) {
             
             <div class="footer-note">
                 * 예산집행일: 전 주 토요일 자정까지 결재 난 건에 한해<br>
-                * 운영위원회의: 마지막주 전주 일요일 (4월: 마지막주 일요일)
+                * 운영위원회의: 마지막주 전주 일요일 (3월, 4월: 마지막주 일요일)
             </div>
 
             <button class="download-btn" onclick="downloadCalendarImage(${month})">
