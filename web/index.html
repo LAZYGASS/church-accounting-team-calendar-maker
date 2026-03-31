@@ -29,6 +29,35 @@
         <div id="calendars-container"></div>
     </div>
 
+    <!-- 운영위원회 날짜 수정 모달 -->
+    <div id="committee-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>운영위원회 날짜 수정</h2>
+                <span class="close" onclick="closeCommitteeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-title">
+                    <span id="committee-modal-title"></span>
+                    <span id="auto-date" class="auto-date-info"></span>
+                </div>
+                <label for="committee-date-input">날짜:</label>
+                <input type="number" id="committee-date-input" min="1" max="31" placeholder="예: 15">
+                <div class="modal-help">
+                    <p>월의 날짜를 입력하세요 (1~31).</p>
+                    <p>비워두면 자동 계산된 날짜가 사용됩니다.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="committee-reset-btn" class="btn-reset">초기화</button>
+                <div>
+                    <button class="btn-cancel" onclick="closeCommitteeModal()">취소</button>
+                    <button id="committee-save-btn" class="btn-save">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="js/calendar.js"></script>
 </body>
