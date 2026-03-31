@@ -1,0 +1,314 @@
+/* 색상 변수 */
+:root {
+    --color-blue: #0061FF;
+    --color-pink: #FD79A8;
+    --color-saturday: #4472C4;
+    --color-border: #4472C4;
+    /* 표 테두리 색상 = 토요일 색상 */
+    --color-bg: #F4F8FB;
+    --color-white: #FFFFFF;
+    --color-black: #000000;
+    --color-prev-month: #C0D3DE;
+    --color-gold: #FFD700;
+}
+
+/* 전체 레이아웃 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', 'NanumSquare', 'Malgun Gothic', sans-serif;
+    font-weight: 700;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* 헤더 */
+header {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    color: var(--color-blue);
+    margin-bottom: 15px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.controls label {
+    font-weight: bold;
+}
+
+.controls select {
+    padding: 8px 12px;
+    border: 2px solid var(--color-blue);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.controls button {
+    padding: 8px 20px;
+    background: var(--color-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.controls button:hover {
+    background: #0051d5;
+}
+
+/* 캘린더 컨테이너 */
+#calendars-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
+    gap: 30px;
+}
+
+/* 개별 캘린더 카드 - 4:3 비율 */
+.calendar-card {
+    background: var(--color-bg);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    width: 800px;
+    margin: 0 auto;
+}
+
+/* 월 숫자 */
+.month-number {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    font-size: 72px;
+    font-weight: bold;
+    color: var(--color-blue);
+    line-height: 1;
+}
+
+/* 헤더 박스 */
+.header-box {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: white;
+    padding: 10px 20px;
+    border-left: 4px solid var(--color-blue);
+    border-radius: 4px;
+}
+
+.header-box h3 {
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.header-box p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 캘린더 표 */
+.calendar-table-wrapper {
+    margin-top: 100px;
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    table-layout: fixed;
+}
+
+.calendar-table th {
+    border-top: 1.5px solid var(--color-border);
+    border-bottom: 1.5px solid var(--color-border);
+    border-left: none;
+    border-right: none;
+    padding: 15px;
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+    height: 60px;
+    background: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Sun 왼쪽, Sat 오른쪽 테두리 없음 */
+.calendar-table th.sunday {
+    color: var(--color-pink);
+}
+
+/* 날짜 셀 - 숫자 사이 구분선 있음 */
+.calendar-table td {
+    border: 1.5px solid var(--color-border);
+    padding: 3px 12px 10px 12px;
+    text-align: center;
+    vertical-align: top;
+    position: relative;
+    height: 70px;
+    font-size: 24px;
+}
+
+/* Sun 왼쪽 테두리만 없음 */
+.calendar-table td:first-child {
+    border-left: none;
+}
+
+/* Sat 오른쪽 테두리만 없음 */
+.calendar-table td:last-child {
+    border-right: none;
+}
+
+.date-number {
+    font-weight: 700;
+    display: block;
+    margin-top: 2px;
+    margin-bottom: 8px;
+}
+
+.date-number.prev-month {
+    color: var(--color-prev-month);
+}
+
+.date-number.sunday {
+    color: var(--color-pink);
+}
+
+.date-number.saturday {
+    color: var(--color-saturday);
+}
+
+.date-number.execution-day {
+    color: var(--color-blue);
+    font-weight: bold;
+}
+
+/* 이벤트 박스 */
+.event-box {
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.event-box.execution {
+    background: var(--color-blue);
+}
+
+.event-box.execution-note {
+    background: #FFEB3B;
+    color: var(--color-black);
+    font-size: 10px;
+    padding: 4px 8px 4px 12px;
+    bottom: 3px;
+    white-space: nowrap;
+    width: auto;
+    right: 0;
+    left: auto;
+    transform: none;
+    text-align: left;
+}
+
+.event-box.execution-note::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-right: 10px solid #FFEB3B;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+.event-box.approval {
+    background: var(--color-pink);
+    width: 200%;
+    left: 0;
+    transform: none;
+    z-index: 10;
+}
+
+.event-box.committee {
+    background: var(--color-gold);
+    color: var(--color-black);
+    font-size: 11px;
+    padding: 5px 10px;
+    font-weight: 700;
+}
+
+/* 하단 주석 */
+.footer-note {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* 다운로드 버튼 */
+.download-btn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    background: var(--color-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.download-btn:hover {
+    background: #0051d5;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    #calendars-container {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-card {
+        padding: 20px;
+    }
+
+    .month-number {
+        font-size: 48px;
+    }
+
+    .calendar-table th,
+    .calendar-table td {
+        padding: 8px;
+        font-size: 14px;
+        height: 60px;
+    }
+}
