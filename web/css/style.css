@@ -272,33 +272,11 @@ header h1 {
     color: #666;
 }
 
-/* 버튼 그룹 */
-.button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-/* 수정 버튼 */
-.edit-committee-btn {
-    flex: 1;
-    padding: 10px;
-    background: var(--color-gold);
-    color: var(--color-black);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.edit-committee-btn:hover {
-    background: #ffc700;
-}
-
 /* 다운로드 버튼 */
 .download-btn {
-    flex: 1;
+    display: block;
+    width: 100%;
+    margin-top: 15px;
     padding: 10px;
     background: var(--color-blue);
     color: white;
@@ -311,177 +289,6 @@ header h1 {
 
 .download-btn:hover {
     background: #0051d5;
-}
-
-/* 모달 스타일 */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 50px auto;
-    padding: 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 500px;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: var(--color-blue);
-    font-size: 20px;
-}
-
-.close {
-    font-size: 28px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.close:hover {
-    color: #000;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.auto-date-info {
-    display: block;
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.modal-body label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
-}
-
-.modal-body input {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid var(--color-blue);
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.modal-body input:focus {
-    outline: none;
-    border-color: #0051d5;
-    box-shadow: 0 0 0 3px rgba(0, 97, 255, 0.1);
-}
-
-.modal-help {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-left: 3px solid var(--color-gold);
-    border-radius: 4px;
-}
-
-.modal-help p {
-    margin: 8px 0;
-    font-size: 13px;
-    color: #666;
-    line-height: 1.4;
-}
-
-.modal-help p:first-child {
-    margin-top: 0;
-}
-
-.modal-help p:last-child {
-    margin-bottom: 0;
-}
-
-.modal-footer {
-    padding: 20px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.modal-footer > div {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-    justify-content: flex-end;
-}
-
-.btn-reset {
-    padding: 10px 20px;
-    background-color: #e0e0e0;
-    color: #333;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.btn-reset:hover {
-    background-color: #d0d0d0;
-}
-
-.btn-cancel {
-    padding: 10px 20px;
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.btn-cancel:hover {
-    background-color: #e8e8e8;
-}
-
-.btn-save {
-    padding: 10px 20px;
-    background-color: var(--color-blue);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.btn-save:hover {
-    background-color: #0051d5;
 }
 
 /* 반응형 */
@@ -503,31 +310,5 @@ header h1 {
         padding: 8px;
         font-size: 14px;
         height: 60px;
-    }
-
-    .button-group {
-        flex-direction: column;
-    }
-
-    .edit-committee-btn,
-    .download-btn {
-        flex: 1;
-    }
-
-    .modal-content {
-        width: 95%;
-        margin: 100px auto 50px;
-    }
-
-    .modal-footer {
-        flex-direction: column;
-    }
-
-    .modal-footer > div {
-        width: 100%;
-    }
-
-    .btn-reset {
-        width: 100%;
     }
 }

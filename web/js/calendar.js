@@ -1,43 +1,3 @@
-// ===== localStorage 관리 함수 =====
-
-/**
- * localStorage에서 커스텀 운영위원회 날짜 로드
- */
-function loadCustomCommitteeDates() {
-    const data = localStorage.getItem('customCommitteeDates');
-    return data ? JSON.parse(data) : {};
-}
-
-/**
- * localStorage에 커스텀 운영위원회 날짜 저장
- */
-function saveCustomCommitteeDates(dates) {
-    localStorage.setItem('customCommitteeDates', JSON.stringify(dates));
-}
-
-/**
- * 특정 년월의 커스텀 날짜 가져오기
- */
-function getCustomCommitteeDay(year, month) {
-    const customDates = loadCustomCommitteeDates();
-    const key = `${year}-${String(month).padStart(2, '0')}`;
-    return customDates[key] || null;
-}
-
-/**
- * 특정 년월의 커스텀 날짜 저장
- */
-function setCustomCommitteeDay(year, month, day) {
-    const customDates = loadCustomCommitteeDates();
-    const key = `${year}-${String(month).padStart(2, '0')}`;
-    if (day === null || day === '') {
-        delete customDates[key];
-    } else {
-        customDates[key] = parseInt(day);
-    }
-    saveCustomCommitteeDates(customDates);
-}
-
 // ===== 날짜 계산 함수 =====
 
 /**
@@ -87,16 +47,11 @@ function getApprovalDays(year, month, executionDays) {
 }
 
 /**
- * 마지막주 전주 일요일 찾기 (커스텀 날짜 지원)
+ * 운영위원회 날짜 계산
+ * - 4월: 마지막주 일요일
+ * - 나머지: 마지막주 전주 일요일
  */
 function getCommitteeDay(year, month) {
-    // 먼저 커스텀 설정 확인
-    const customDay = getCustomCommitteeDay(year, month);
-    if (customDay !== null) {
-        return customDay;
-    }
-
-    // 커스텀이 없으면 자동 계산
     const lastDay = new Date(year, month, 0); // 해당 월의 마지막 날
     const lastDate = lastDay.getDate();
 
@@ -110,12 +65,19 @@ function getCommitteeDay(year, month) {
         }
     }
 
-    // 마지막주 전주 일요일
-    if (lastSunday) {
-        const prevSunday = lastSunday - 7;
-        if (prevSunday > 0) {
-            return prevSunday;
-        }
+    if (!lastSunday) {
+        return null;
+    }
+
+    // 4월: 마지막주 일요일
+    if (month === 4) {
+        return lastSunday;
+    }
+
+    // 나머지: 마지막주 전주 일요일
+    const prevSunday = lastSunday - 7;
+    if (prevSunday > 0) {
+        return prevSunday;
     }
 
     return null;
@@ -245,18 +207,12 @@ function generateCalendar(year, month) {
             
             <div class="footer-note">
                 * 예산집행일: 전 주 토요일 자정까지 결재 난 건에 한해<br>
-                * 운영위원회의: 마지막주 전주 일요일
-                <span class="custom-indicator" id="custom-indicator-${month}" style="display:none; margin-left:10px; color:#FFD700;">✓ 날짜 수정됨</span>
+                * 운영위원회의: 마지막주 전주 일요일 (4월: 마지막주 일요일)
             </div>
 
-            <div class="button-group">
-                <button class="edit-committee-btn" onclick="openCommitteeModal(${year}, ${month})">
-                    운영위원회 날짜 수정
-                </button>
-                <button class="download-btn" onclick="downloadCalendarImage(${month})">
-                    ${month}월 이미지 다운로드
-                </button>
-            </div>
+            <button class="download-btn" onclick="downloadCalendarImage(${month})">
+                ${month}월 이미지 다운로드
+            </button>
         </div>
     `;
 
@@ -275,9 +231,6 @@ function generateAllCalendars(year) {
         container.innerHTML += calendarHTML;
     }
 
-    // 커스텀 날짜 표시 업데이트
-    updateCustomIndicators(year);
-
     // 콘솔에 일정 출력 (검증용)
     console.log(`=== ${year}년 재정집행일정 ===`);
     for (let month = 1; month <= 12; month++) {
@@ -286,19 +239,6 @@ function generateAllCalendars(year) {
         console.log(`  집행일: ${schedule.executionDays.join(', ')}`);
         console.log(`  결재일: ${schedule.approvalDays.join(', ')}`);
         console.log(`  운영위원회의: ${schedule.committeeDay || '없음'}`);
-    }
-}
-
-/**
- * 커스텀 날짜가 있는 월에 표시 업데이트
- */
-function updateCustomIndicators(year) {
-    for (let month = 1; month <= 12; month++) {
-        const customDay = getCustomCommitteeDay(year, month);
-        const indicator = document.getElementById(`custom-indicator-${month}`);
-        if (indicator) {
-            indicator.style.display = customDay !== null ? 'inline' : 'none';
-        }
     }
 }
 
@@ -331,45 +271,6 @@ function downloadCalendarImage(month) {
     });
 }
 
-// ===== 운영위원회 날짜 수정 함수 =====
-
-/**
- * 운영위원회 날짜 수정 모달 열기
- */
-function openCommitteeModal(year, month) {
-    const modal = document.getElementById('committee-modal');
-    const titleSpan = document.getElementById('committee-modal-title');
-    const input = document.getElementById('committee-date-input');
-    const autoDateSpan = document.getElementById('auto-date');
-    const currentCustomDay = getCustomCommitteeDay(year, month);
-    const autoDay = calculateSchedule(year, month).committeeDay;
-
-    // 모달에 년월 데이터 저장 (클로저 문제 방지)
-    modal.dataset.year = year;
-    modal.dataset.month = month;
-
-    titleSpan.textContent = `${year}년 ${month}월`;
-    input.value = currentCustomDay !== null ? currentCustomDay : '';
-
-    // 자동 계산 날짜 표시
-    if (autoDay) {
-        autoDateSpan.textContent = `(자동 계산: ${month}월 ${autoDay}일)`;
-    } else {
-        autoDateSpan.textContent = '(자동 계산 불가)';
-    }
-
-    modal.style.display = 'block';
-    input.focus();
-}
-
-/**
- * 모달 닫기
- */
-function closeCommitteeModal() {
-    const modal = document.getElementById('committee-modal');
-    modal.style.display = 'none';
-}
-
 // ===== 초기화 =====
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -395,54 +296,6 @@ document.addEventListener('DOMContentLoaded', function () {
     generateBtn.addEventListener('click', function () {
         const year = parseInt(yearSelect.value);
         generateAllCalendars(year);
-    });
-
-    // 모달 외부 클릭 시 닫기
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('committee-modal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-
-    // 모달 버튼 이벤트 (한 번만 설정)
-    const modal = document.getElementById('committee-modal');
-    const saveBtn = document.getElementById('committee-save-btn');
-    const resetBtn = document.getElementById('committee-reset-btn');
-    const dateInput = document.getElementById('committee-date-input');
-
-    // 저장 버튼
-    saveBtn.addEventListener('click', function() {
-        const year = parseInt(modal.dataset.year);
-        const month = parseInt(modal.dataset.month);
-        const day = dateInput.value;
-
-        if (day && (parseInt(day) < 1 || parseInt(day) > 31)) {
-            alert('1~31 사이의 숫자를 입력하세요.');
-            return;
-        }
-        setCustomCommitteeDay(year, month, day);
-        modal.style.display = 'none';
-        generateAllCalendars(year);
-    });
-
-    // 초기화 버튼
-    resetBtn.addEventListener('click', function() {
-        const year = parseInt(modal.dataset.year);
-        const month = parseInt(modal.dataset.month);
-
-        if (confirm('자동 계산으로 초기화하시겠습니까?')) {
-            setCustomCommitteeDay(year, month, null);
-            modal.style.display = 'none';
-            generateAllCalendars(year);
-        }
-    });
-
-    // 모달 Enter 키 처리
-    dateInput.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            saveBtn.click();
-        }
     });
 
     // 초기 로드 시 현재 연도 캘린더 자동 생성
