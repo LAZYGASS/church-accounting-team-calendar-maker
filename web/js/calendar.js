@@ -344,6 +344,10 @@ function openCommitteeModal(year, month) {
     const currentCustomDay = getCustomCommitteeDay(year, month);
     const autoDay = calculateSchedule(year, month).committeeDay;
 
+    // 모달에 년월 데이터 저장 (클로저 문제 방지)
+    modal.dataset.year = year;
+    modal.dataset.month = month;
+
     titleSpan.textContent = `${year}년 ${month}월`;
     input.value = currentCustomDay !== null ? currentCustomDay : '';
 
@@ -354,30 +358,8 @@ function openCommitteeModal(year, month) {
         autoDateSpan.textContent = '(자동 계산 불가)';
     }
 
-    // 저장 버튼 클릭 시 처리
-    const saveBtn = document.getElementById('committee-save-btn');
-    const resetBtn = document.getElementById('committee-reset-btn');
-
-    saveBtn.onclick = function() {
-        const day = input.value;
-        if (day && (parseInt(day) < 1 || parseInt(day) > 31)) {
-            alert('1~31 사이의 숫자를 입력하세요.');
-            return;
-        }
-        setCustomCommitteeDay(year, month, day);
-        modal.style.display = 'none';
-        generateAllCalendars(year);
-    };
-
-    resetBtn.onclick = function() {
-        if (confirm('자동 계산으로 초기화하시겠습니까?')) {
-            setCustomCommitteeDay(year, month, null);
-            modal.style.display = 'none';
-            generateAllCalendars(year);
-        }
-    };
-
     modal.style.display = 'block';
+    input.focus();
 }
 
 /**
@@ -423,15 +405,45 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // 모달 Enter 키 처리
+    // 모달 버튼 이벤트 (한 번만 설정)
+    const modal = document.getElementById('committee-modal');
+    const saveBtn = document.getElementById('committee-save-btn');
+    const resetBtn = document.getElementById('committee-reset-btn');
     const dateInput = document.getElementById('committee-date-input');
-    if (dateInput) {
-        dateInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                document.getElementById('committee-save-btn').click();
-            }
-        });
-    }
+
+    // 저장 버튼
+    saveBtn.addEventListener('click', function() {
+        const year = parseInt(modal.dataset.year);
+        const month = parseInt(modal.dataset.month);
+        const day = dateInput.value;
+
+        if (day && (parseInt(day) < 1 || parseInt(day) > 31)) {
+            alert('1~31 사이의 숫자를 입력하세요.');
+            return;
+        }
+        setCustomCommitteeDay(year, month, day);
+        modal.style.display = 'none';
+        generateAllCalendars(year);
+    });
+
+    // 초기화 버튼
+    resetBtn.addEventListener('click', function() {
+        const year = parseInt(modal.dataset.year);
+        const month = parseInt(modal.dataset.month);
+
+        if (confirm('자동 계산으로 초기화하시겠습니까?')) {
+            setCustomCommitteeDay(year, month, null);
+            modal.style.display = 'none';
+            generateAllCalendars(year);
+        }
+    });
+
+    // 모달 Enter 키 처리
+    dateInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            saveBtn.click();
+        }
+    });
 
     // 초기 로드 시 현재 연도 캘린더 자동 생성
     generateAllCalendars(currentYear);
