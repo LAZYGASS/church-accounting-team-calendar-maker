@@ -207,7 +207,7 @@ function generateCalendar(year, month) {
             
             <div class="footer-note">
                 * 예산집행일: 전 주 토요일 자정까지 결재 난 건에 한해<br>
-                * 운영위원회의: 마지막주 전주 일요일 (3월, 4월: 마지막주 일요일)
+                * 운영위원회의: 마지막주 전주 일요일
             </div>
 
             <button class="download-btn" onclick="downloadCalendarImage(${month})">
