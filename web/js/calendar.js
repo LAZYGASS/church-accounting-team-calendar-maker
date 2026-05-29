@@ -120,6 +120,11 @@ function generateCalendar(year, month) {
     const { executionDays, approvalDays, committeeDay } = schedule;
     const saturdayRule = usesSaturdayRule(year, month);
 
+    // 시범 운행 시작 월(2026년 6월) 안내 배너
+    const trialNote = (year === 2026 && month === 6)
+        ? '<div class="trial-note">예산집행일자 토요일로 변경<br>(시범 운행)</div>'
+        : '';
+
     // 월의 첫날과 마지막날
     const firstDay = new Date(year, month - 1, 1);
     const lastDay = new Date(year, month, 0);
@@ -135,6 +140,7 @@ function generateCalendar(year, month) {
     let html = `
         <div class="calendar-card" id="calendar-${month}">
             <div class="month-number">${month}</div>
+            ${trialNote}
             <div class="header-box">
                 <h3>예산집행캘린더</h3>
                 <p>${String(year).slice(-2)}.${String(month).padStart(2, '0')}</p>
