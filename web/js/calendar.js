@@ -206,9 +206,12 @@ function generateCalendar(year, month) {
                     }
                 }
 
-                // 결재일 (금요일에만 박스 표시, 금토 2칸에 걸침)
+                // 결재일 (금요일 칸에 표시)
+                // - 화요일 규칙: 전주 금토 2칸에 걸침
+                // - 토요일 규칙: 그 주 금요일 1칸 (옆 토요일 집행 박스와 겹치지 않도록)
                 if (approvalDays.includes(day) && dayOfWeek === 5) {
-                    eventBox = '<div class="event-box approval">결재일</div>';
+                    const approvalClass = saturdayRule ? 'event-box approval approval-single' : 'event-box approval';
+                    eventBox = `<div class="${approvalClass}">결재일</div>`;
                 }
 
                 // 운영위원회의
