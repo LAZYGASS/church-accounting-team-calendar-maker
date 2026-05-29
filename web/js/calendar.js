@@ -187,11 +187,11 @@ function generateCalendar(year, month) {
                     eventBox = '<div class="event-box execution">예산집행일</div>';
                 }
 
-                // 집행 기준 안내 (노란색 설명 박스) - 집행일 다음 칸에 표시
+                // 집행 기준 안내 (노란색 설명 박스)
                 if (saturdayRule) {
-                    // 토요일 집행: 다음 날 일요일에 표시
-                    if (executionDays.includes(day - 1) && dayOfWeek === 0) {
-                        eventBox = '<div class="event-box execution-note">전 주 토요일 자정까지 결재 난 건에 한해</div>';
+                    // 토요일 집행: 바로 왼쪽 금요일 칸에 표시 (화살표가 오른쪽 집행일을 가리킴)
+                    if (executionDays.includes(day + 1) && dayOfWeek === 5) {
+                        eventBox = '<div class="event-box execution-note note-left">전 주 토요일 자정까지 결재 난 건에 한해</div>';
                     }
                 } else {
                     // 화요일 집행: 다음 목요일에 표시

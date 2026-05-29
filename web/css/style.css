@@ -249,6 +249,21 @@ header h1 {
     border-bottom: 8px solid transparent;
 }
 
+/* 토요일 집행: 노란 박스를 집행일 왼쪽(금요일 칸)에 붙이고 화살표는 오른쪽으로 */
+.event-box.execution-note.note-left {
+    right: 0;
+    left: auto;
+    transform: none;
+    padding: 4px 12px 4px 8px;
+}
+
+.event-box.execution-note.note-left::before {
+    left: auto;
+    right: -10px;
+    border-right: none;
+    border-left: 10px solid #FFEB3B;
+}
+
 .event-box.approval {
     background: var(--color-pink);
     width: 200%;
