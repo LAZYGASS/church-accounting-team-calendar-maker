@@ -94,23 +94,19 @@ class BudgetCalendarTemplate:
         if len(exec_weeks) >= 4:
             execution_days.append(exec_weeks[3])  # 넷째주
 
-        # 2. 결재일
+        # 2. 결재일: 집행일 전주 금요일/토요일
+        #    - 화요일 집행: 4일 전(금), 3일 전(토)
+        #    - 토요일 집행: 8일 전(금), 7일 전(토) → 전주(1주차/3주차) 금·토
+        friday_offset = 8 if saturday_rule else 4
+        saturday_offset = 7 if saturday_rule else 3
         approval_days = []
         for exec_day in execution_days:
-            if saturday_rule:
-                # 그 주 금요일 (토요일 집행일 1일 전)
-                friday_date = datetime(year, month, exec_day) - timedelta(days=1)
-                if friday_date.month == month:
-                    approval_days.append(friday_date.day)
-            else:
-                # 집행일로부터 4일 전 (화요일 -> 금요일)
-                friday_date = datetime(year, month, exec_day) - timedelta(days=4)
-                if friday_date.month == month:
-                    approval_days.append(friday_date.day)
-                # 집행일로부터 3일 전 (화요일 -> 토요일)
-                saturday_date = datetime(year, month, exec_day) - timedelta(days=3)
-                if saturday_date.month == month:
-                    approval_days.append(saturday_date.day)
+            friday_date = datetime(year, month, exec_day) - timedelta(days=friday_offset)
+            if friday_date.month == month:
+                approval_days.append(friday_date.day)
+            saturday_date = datetime(year, month, exec_day) - timedelta(days=saturday_offset)
+            if saturday_date.month == month:
+                approval_days.append(saturday_date.day)
         
         # 3. 운영위원회의: 마지막주 전주 일요일
         committee_day = None
@@ -179,8 +175,7 @@ class BudgetCalendarTemplate:
         execution_positions, approval_positions = self._add_calendar_table(slide, year, month, approval_days, execution_days, committee_day)
 
         # 4. 범례 추가 (집행일, 결재일 날짜 밑에 배치)
-        saturday_rule = self.uses_saturday_rule(year, month)
-        self._add_legend(slide, approval_days, execution_days, execution_positions, approval_positions, saturday_rule)
+        self._add_legend(slide, approval_days, execution_days, execution_positions, approval_positions)
         
         return slide
     
@@ -244,10 +239,6 @@ class BudgetCalendarTemplate:
         cal = calendar.monthcalendar(year, month)
         rows = len(cal) + 1  # 헤더 포함
         cols = 7
-
-        # 토요일 집행 규칙이면 결재일은 그 주 금요일(col_idx=4), 아니면 토요일(col_idx=5)
-        saturday_rule = self.uses_saturday_rule(year, month)
-        approval_col = 4 if saturday_rule else 5
 
         # 이전 달 마지막 날 계산
         if month == 1:
@@ -355,10 +346,9 @@ class BudgetCalendarTemplate:
                         # 집행일 위치 저장 (row, col, day)
                         execution_positions.append((row_idx, col_idx, day))
                     else:
-                        # 결재일 위치 저장
-                        # - 화요일 규칙: 토요일(col_idx=5)에 저장하여 금토 2칸 박스 표시
-                        # - 토요일 규칙: 금요일(col_idx=4)에 저장하여 1칸 박스 표시
-                        if approval_days and day in approval_days and col_idx == approval_col:
+                        # 결재일 위치 저장 (토요일만 저장하여 금토 2칸 박스 표시)
+                        # calendar.monthcalendar()에서 토요일은 col_idx=5
+                        if approval_days and day in approval_days and col_idx == 5:  # 토요일
                             approval_positions.append((row_idx, col_idx, day))
 
                         # 요일별 색상
@@ -440,7 +430,7 @@ class BudgetCalendarTemplate:
         add_border('lnT')  # 위
         add_border('lnB')  # 아래
     
-    def _add_legend(self, slide, approval_days, execution_days, execution_positions, approval_positions, saturday_rule=False):
+    def _add_legend(self, slide, approval_days, execution_days, execution_positions, approval_positions):
         """범례 추가 - 집행일, 결재일 날짜 밑에 배치"""
 
         col_width = self.TABLE_WIDTH / 7  # 7개 열
@@ -505,7 +495,7 @@ class BudgetCalendarTemplate:
                     desc_width, desc_height
                 )
                 desc_frame = desc_textbox.text_frame
-                desc_frame.text = "<-그 주 금요일 자정까지 결재 난 건에 한해" if saturday_rule else "<-전 주 토요일 자정까지 결재 난 건에 한해"
+                desc_frame.text = "<-전 주 토요일 자정까지 결재 난 건에 한해"
                 desc_frame.vertical_anchor = 1  # 중앙 정렬
 
                 desc_para = desc_frame.paragraphs[0]
@@ -529,8 +519,8 @@ class BudgetCalendarTemplate:
                 cell_top = self.TABLE_TOP + Inches(0.508) + (Inches(0.821) * (row_idx - 1))
                 cell_bottom = cell_top + Inches(0.821)
 
-                # 박스 크기 (토요일 규칙: 금요일 1칸 / 화요일 규칙: 금토 2칸)
-                box_width = col_width * (1 if saturday_rule else 2)
+                # 박스 크기 (2칸 너비)
+                box_width = col_width * 2
                 box_height = Inches(0.35)
 
                 # 박스를 금요일부터 토요일 2칸에 걸쳐 배치

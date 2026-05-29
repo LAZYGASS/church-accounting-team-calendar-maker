@@ -257,13 +257,6 @@ header h1 {
     z-index: 10;
 }
 
-/* 토요일 규칙: 결재일은 그 주 금요일 1칸만 (옆 토요일 집행 박스를 덮지 않도록) */
-.event-box.approval.approval-single {
-    width: auto;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
 .event-box.committee {
     background: var(--color-gold);
     color: var(--color-black);
