@@ -19,43 +19,59 @@ const validateCalendarDate = (year, month) => {
 // ===== 날짜 계산 함수 =====
 
 /**
- * 특정 월의 둘째주/넷째주 화요일 찾기
+ * 2026년 6월부터 시범적으로 집행일을 토요일로 적용
+ * - 그 이전(2026년 5월까지): 화요일 집행
  */
-function getSecondAndFourthTuesday(year, month) {
-    const tuesdays = [];
+function usesSaturdayRule(year, month) {
+    return year > 2026 || (year === 2026 && month >= 6);
+}
+
+/**
+ * 특정 월의 둘째주/넷째주 집행일 찾기
+ * - 토요일 규칙: 둘째주/넷째주 토요일
+ * - 화요일 규칙: 둘째주/넷째주 화요일
+ */
+function getExecutionDays(year, month) {
+    const targetDay = usesSaturdayRule(year, month) ? 6 : 2; // 토요일=6, 화요일=2
+    const matches = [];
     const date = new Date(year, month - 1, 1);
 
-    // 해당 월의 모든 화요일 찾기
+    // 해당 월의 모든 대상 요일 찾기
     while (date.getMonth() === month - 1) {
-        if (date.getDay() === 2) { // 화요일
-            tuesdays.push(date.getDate());
+        if (date.getDay() === targetDay) {
+            matches.push(date.getDate());
         }
         date.setDate(date.getDate() + 1);
     }
 
     // 둘째주, 넷째주 반환
     const executionDays = [];
-    if (tuesdays.length >= 2) executionDays.push(tuesdays[1]); // 둘째주
-    if (tuesdays.length >= 4) executionDays.push(tuesdays[3]); // 넷째주
+    if (matches.length >= 2) executionDays.push(matches[1]); // 둘째주
+    if (matches.length >= 4) executionDays.push(matches[3]); // 넷째주
 
     return executionDays;
 }
 
 /**
- * 집행일의 전주 금요일, 토요일 계산
+ * 결재일 계산: 집행일 전주 금요일/토요일
+ * - 화요일 집행: 4일 전(금), 3일 전(토)
+ * - 토요일 집행: 8일 전(금), 7일 전(토)  → 전주(1주차/3주차) 금·토
  */
 function getApprovalDays(year, month, executionDays) {
     const approvalDays = [];
+    const saturdayRule = usesSaturdayRule(year, month);
+    const fridayOffset = saturdayRule ? 8 : 4;
+    const saturdayOffset = saturdayRule ? 7 : 3;
 
     executionDays.forEach(day => {
-        // 금요일 (4일 전)
-        const friday = new Date(year, month - 1, day - 4);
+        // 금요일
+        const friday = new Date(year, month - 1, day - fridayOffset);
         if (friday.getMonth() === month - 1) {
             approvalDays.push(friday.getDate());
         }
 
-        // 토요일 (3일 전)
-        const saturday = new Date(year, month - 1, day - 3);
+        // 토요일
+        const saturday = new Date(year, month - 1, day - saturdayOffset);
         if (saturday.getMonth() === month - 1) {
             approvalDays.push(saturday.getDate());
         }
@@ -65,7 +81,9 @@ function getApprovalDays(year, month, executionDays) {
 }
 
 /**
- * 마지막주 전주 일요일 찾기
+ * 운영위원회 날짜 계산
+ * - 2026년 3월, 4월: 마지막주 일요일 (특이사항)
+ * - 나머지: 마지막주 전주 일요일
  */
 function getCommitteeDay(year, month) {
     const lastDay = new Date(year, month, 0); // 해당 월의 마지막 날
@@ -81,12 +99,19 @@ function getCommitteeDay(year, month) {
         }
     }
 
-    // 마지막주 전주 일요일
-    if (lastSunday) {
-        const prevSunday = lastSunday - 7;
-        if (prevSunday > 0) {
-            return prevSunday;
-        }
+    if (!lastSunday) {
+        return null;
+    }
+
+    // 2026년 3월, 4월만 마지막주 일요일
+    if (year === 2026 && (month === 3 || month === 4)) {
+        return lastSunday;
+    }
+
+    // 나머지: 마지막주 전주 일요일
+    const prevSunday = lastSunday - 7;
+    if (prevSunday > 0) {
+        return prevSunday;
     }
 
     return null;
@@ -97,7 +122,7 @@ function getCommitteeDay(year, month) {
  */
 function calculateSchedule(year, month) {
     validateCalendarDate(year, month);
-    const executionDays = getSecondAndFourthTuesday(year, month);
+    const executionDays = getExecutionDays(year, month);
     const approvalDays = getApprovalDays(year, month, executionDays);
     const committeeDay = getCommitteeDay(year, month);
 
@@ -112,6 +137,12 @@ function calculateSchedule(year, month) {
 function generateCalendar(year, month) {
     const schedule = calculateSchedule(year, month);
     const { executionDays, approvalDays, committeeDay } = schedule;
+    const saturdayRule = usesSaturdayRule(year, month);
+
+    // 시범 운행 시작 월(2026년 6월) 안내 배너
+    const trialNote = (year === 2026 && month === 6)
+        ? '<div class="trial-note">예산집행일자 토요일로 변경<br>(시범 운행)</div>'
+        : '';
 
     // 월의 첫날과 마지막날
     const firstDay = new Date(year, month - 1, 1);
@@ -128,6 +159,7 @@ function generateCalendar(year, month) {
     let html = `
         <div class="calendar-card" id="calendar-${month}" data-year="${year}">
             <div class="month-number">${month}</div>
+            ${trialNote}
             <div class="header-box">
                 <h3>예산집행캘린더</h3>
                 <p>${String(year).slice(-2)}.${String(month).padStart(2, '0')}</p>
@@ -180,12 +212,20 @@ function generateCalendar(year, month) {
                     eventBox = '<div class="event-box execution">예산집행일</div>';
                 }
 
-                // 집행 안내는 날짜를 가리지 않도록 같은 주 목요일에 표시한다.
-                if (executionDays.includes(day - 2) && dayOfWeek === 4) {
-                    eventBox = '<div class="event-box execution-note">전 주 토요일 24:00까지 결재 완료</div>';
+                // 집행 기준 안내 (노란색 설명 박스)
+                if (saturdayRule) {
+                    // 토요일 집행: 바로 왼쪽 금요일 칸에 표시 (화살표가 오른쪽 집행일을 가리킴)
+                    if (executionDays.includes(day + 1) && dayOfWeek === 5) {
+                        eventBox = '<div class="event-box execution-note note-left">전 주 토요일 자정까지 결재 난 건에 한해</div>';
+                    }
+                } else {
+                    // 화요일 집행: 다음 목요일에 표시
+                    if (executionDays.includes(day - 2) && dayOfWeek === 4) {
+                        eventBox = '<div class="event-box execution-note">전 주 토요일 자정까지 결재 난 건에 한해</div>';
+                    }
                 }
 
-                // 결재일 (금요일에만 박스 표시, 금토 2칸에 걸침)
+                // 결재일 (전주 금요일 칸에 표시, 금토 2칸에 걸침)
                 if (approvalDays.includes(day) && dayOfWeek === 5) {
                     eventBox = '<div class="event-box approval">결재일</div>';
                 }
@@ -216,8 +256,8 @@ function generateCalendar(year, month) {
             </div>
             
             <div class="footer-note">
-                * 예산집행일: 둘째·넷째 화요일 (전 주 토요일 24:00까지 결재 완료)<br>
-                * 운영위원회의: 마지막 일요일의 7일 전
+                * 예산집행일: 둘째·넷째 ${saturdayRule ? '토요일' : '화요일'} (전 주 토요일 24:00까지 결재 완료)<br>
+                * 운영위원회의: ${year === 2026 && (month === 3 || month === 4) ? '이번 달 마지막 일요일' : '마지막 일요일의 7일 전'}
             </div>
             
             <p class="download-status" role="status" aria-live="polite" data-html2canvas-ignore="true"></p>
@@ -321,8 +361,29 @@ const downloadCalendarImage = async (month) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const yearSelect = document.getElementById('year-select');
-    document.getElementById('generate-btn').addEventListener('click', () => {
-        generateAllCalendars(Number(yearSelect.value));
+    const generateBtn = document.getElementById('generate-btn');
+
+    // 현재 연도 가져오기
+    const currentYear = new Date().getFullYear();
+
+    // 연도 드롭다운 동적 생성 (현재 연도 ± 5년)
+    yearSelect.innerHTML = '';
+    for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) {
+            option.selected = true;
+        }
+        yearSelect.appendChild(option);
+    }
+
+    // 생성 버튼 클릭
+    generateBtn.addEventListener('click', function () {
+        const year = parseInt(yearSelect.value);
+        generateAllCalendars(year);
     });
-    generateAllCalendars(Number(yearSelect.value));
+
+    // 초기 로드 시 현재 연도 캘린더 자동 생성
+    generateAllCalendars(currentYear);
 });

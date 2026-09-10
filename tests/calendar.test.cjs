@@ -15,11 +15,14 @@ test('2000~2100년의 집행·결재·운영위원회 규칙과 윤년', () => {
         for (let month = 1; month <= 12; month++) {
             const schedule = context.calculateSchedule(year, month);
             const days = Array.from({ length: new Date(year, month, 0).getDate() }, (_, index) => index + 1);
-            const tuesdays = days.filter(day => new Date(year, month - 1, day).getDay() === 2);
+            const saturdayRule = year > 2026 || (year === 2026 && month >= 6);
+            const tuesdays = days.filter(day => new Date(year, month - 1, day).getDay() === (saturdayRule ? 6 : 2));
             const sundays = days.filter(day => new Date(year, month - 1, day).getDay() === 0);
             assert.deepEqual(Array.from(schedule.executionDays), [tuesdays[1], tuesdays[3]]);
-            assert.deepEqual(Array.from(schedule.approvalDays), [tuesdays[1] - 4, tuesdays[1] - 3, tuesdays[3] - 4, tuesdays[3] - 3]);
-            assert.equal(schedule.committeeDay, sundays.at(-2));
+            const fridayOffset = saturdayRule ? 8 : 4;
+            const saturdayOffset = saturdayRule ? 7 : 3;
+            assert.deepEqual(Array.from(schedule.approvalDays), [tuesdays[1] - fridayOffset, tuesdays[1] - saturdayOffset, tuesdays[3] - fridayOffset, tuesdays[3] - saturdayOffset].filter(day => day > 0));
+            assert.equal(schedule.committeeDay, sundays.at(year === 2026 && [3, 4].includes(month) ? -1 : -2));
         }
     }
     assert.throws(() => context.calculateSchedule(2026, 13));

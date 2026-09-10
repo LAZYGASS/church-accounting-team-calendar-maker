@@ -62,50 +62,56 @@ class BudgetCalendarTemplate:
         self.prs.slide_height = self.SLIDE_HEIGHT
     
     @staticmethod
+    def uses_saturday_rule(year, month):
+        """2026년 6월부터 시범적으로 집행일을 토요일로 적용 (그 이전은 화요일)"""
+        return year > 2026 or (year == 2026 and month >= 6)
+
+    @staticmethod
     def calculate_schedule(year, month):
         """
         규정에 따른 일정 자동 계산
 
+        - 2026년 6월 이전: 둘째주/넷째주 화요일 집행, 결재일 전주 금/토
+        - 2026년 6월부터: 둘째주/넷째주 토요일 집행, 결재일 전주 금요일/토요일
+
         Returns:
             dict: {
-                'execution_days': [둘째주 화요일, 넷째주 화요일],
-                'approval_days': [각 집행일 전주 금요일, 토요일],
+                'execution_days': [둘째주 집행일, 넷째주 집행일],
+                'approval_days': [결재일],
                 'committee_day': 마지막주 전주 일요일
             }
         """
         cal = calendar.Calendar(firstweekday=calendar.MONDAY).monthdayscalendar(year, month)
+        saturday_rule = BudgetCalendarTemplate.uses_saturday_rule(year, month)
 
-        # 1. 예산지급일: 둘째주/넷째주 화요일
+        # 1. 예산지급일(집행일): 둘째주/넷째주 (토요일 또는 화요일)
+        exec_col = 5 if saturday_rule else 1  # 토요일=5, 화요일=1 (Monday=0 기준)
+        exec_weeks = [week[exec_col] for week in cal if week[exec_col] != 0]
+
         execution_days = []
-        tuesday_weeks = []
+        if len(exec_weeks) >= 2:
+            execution_days.append(exec_weeks[1])  # 둘째주
+        if len(exec_weeks) >= 4:
+            execution_days.append(exec_weeks[3])  # 넷째주
 
-        for week_idx, week in enumerate(cal):
-            tuesday = week[1]  # 화요일 (인덱스 1, Monday=0 기준)
-            if tuesday != 0:
-                tuesday_weeks.append((week_idx, tuesday))
-
-        # 둘째주, 넷째주 선택
-        if len(tuesday_weeks) >= 2:
-            execution_days.append(tuesday_weeks[1][1])  # 둘째주
-        if len(tuesday_weeks) >= 4:
-            execution_days.append(tuesday_weeks[3][1])  # 넷째주
-
-        # 2. 결재일: 각 집행일 전주 금요일, 토요일
+        # 2. 결재일: 집행일 전주 금요일/토요일
+        #    - 화요일 집행: 4일 전(금), 3일 전(토)
+        #    - 토요일 집행: 8일 전(금), 7일 전(토) → 전주(1주차/3주차) 금·토
+        friday_offset = 8 if saturday_rule else 4
+        saturday_offset = 7 if saturday_rule else 3
         approval_days = []
         for exec_day in execution_days:
-            # 집행일로부터 4일 전 (화요일 -> 금요일)
-            friday_date = datetime(year, month, exec_day) - timedelta(days=4)
+            friday_date = datetime(year, month, exec_day) - timedelta(days=friday_offset)
             if friday_date.month == month:
                 approval_days.append(friday_date.day)
-            # 집행일로부터 3일 전 (화요일 -> 토요일)
-            saturday_date = datetime(year, month, exec_day) - timedelta(days=3)
+            saturday_date = datetime(year, month, exec_day) - timedelta(days=saturday_offset)
             if saturday_date.month == month:
                 approval_days.append(saturday_date.day)
         
         # 전역 주 시작 설정에 영향받지 않도록 실제 일요일 날짜로 계산한다.
         sundays = [day for day in range(1, calendar.monthrange(year, month)[1] + 1)
                    if calendar.weekday(year, month, day) == calendar.SUNDAY]
-        committee_day = sundays[-2]
+        committee_day = sundays[-1] if year == 2026 and month in (3, 4) else sundays[-2]
         
         return {
             'execution_days': execution_days,

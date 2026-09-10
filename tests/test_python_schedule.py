@@ -3,6 +3,7 @@ import ast
 import calendar
 from datetime import datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 import unittest
 
 
@@ -13,6 +14,11 @@ schedule_method = next(node for node in template_class.body
                        if isinstance(node, ast.FunctionDef) and node.name == 'calculate_schedule')
 schedule_method.decorator_list = []
 namespace = {'calendar': calendar, 'datetime': datetime, 'timedelta': timedelta}
+rule_method = next(node for node in template_class.body
+                   if isinstance(node, ast.FunctionDef) and node.name == 'uses_saturday_rule')
+rule_method.decorator_list = []
+exec(compile(ast.Module(body=[rule_method], type_ignores=[]), '<rule>', 'exec'), namespace)
+namespace['BudgetCalendarTemplate'] = SimpleNamespace(uses_saturday_rule=namespace['uses_saturday_rule'])
 exec(compile(ast.Module(body=[schedule_method], type_ignores=[]), '<schedule>', 'exec'), namespace)
 
 
@@ -26,11 +32,13 @@ class ScheduleTests(unittest.TestCase):
                     for month in range(1, 13):
                         schedule = namespace['calculate_schedule'](year, month)
                         dates = range(1, calendar.monthrange(year, month)[1] + 1)
-                        tuesdays = [day for day in dates if datetime(year, month, day).weekday() == 1]
+                        saturday_rule = year > 2026 or (year == 2026 and month >= 6)
+                        tuesdays = [day for day in dates if datetime(year, month, day).weekday() == (5 if saturday_rule else 1)]
                         sundays = [day for day in dates if datetime(year, month, day).weekday() == 6]
                         self.assertEqual(schedule['execution_days'], [tuesdays[1], tuesdays[3]])
-                        self.assertEqual(schedule['approval_days'], [tuesdays[1]-4, tuesdays[1]-3, tuesdays[3]-4, tuesdays[3]-3])
-                        self.assertEqual(schedule['committee_day'], sundays[-2])
+                        friday_offset, saturday_offset = (8, 7) if saturday_rule else (4, 3)
+                        self.assertEqual(schedule['approval_days'], [day for day in [tuesdays[1]-friday_offset, tuesdays[1]-saturday_offset, tuesdays[3]-friday_offset, tuesdays[3]-saturday_offset] if day > 0])
+                        self.assertEqual(schedule['committee_day'], sundays[-1] if year == 2026 and month in (3, 4) else sundays[-2])
         finally:
             calendar.setfirstweekday(original_week_start)
 
