@@ -79,7 +79,7 @@ header h1 {
 /* 캘린더 컨테이너 */
 #calendars-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 30px;
 }
 
@@ -91,6 +91,7 @@ header h1 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     position: relative;
     width: 800px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -292,23 +293,53 @@ header h1 {
 }
 
 /* 반응형 */
-@media (max-width: 768px) {
+.download-status:not(:empty) {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.download-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+@media (max-width: 839px) {
+    body { padding: 12px; }
+    header { padding: 16px; }
+    header h1 { font-size: 22px; }
+    .controls { flex-wrap: wrap; }
+    .controls select, .controls button, .download-btn { min-height: 44px; }
     #calendars-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .calendar-card {
-        padding: 20px;
+        padding: 12px;
     }
 
     .month-number {
         font-size: 48px;
+        left: 12px;
     }
+
+    .header-box { right: 12px; padding: 8px 10px; }
+    .header-box h3 { font-size: 14px; }
 
     .calendar-table th,
     .calendar-table td {
-        padding: 8px;
+        padding: 4px 1px;
         font-size: 14px;
         height: 60px;
     }
+
+    .calendar-table td { height: 76px; }
+    .event-box { padding: 5px 1px; font-size: 10px; border-radius: 4px; }
+    .event-box.execution, .event-box.committee {
+        width: 100%; white-space: normal; overflow-wrap: anywhere;
+        font-size: 10px; padding: 4px 1px;
+    }
+    /* 반복 안내는 하단에도 있어 좁은 셀에서는 생략한다. */
+    .event-box.execution-note { display: none; }
+    .footer-note { line-height: 1.7; overflow-wrap: anywhere; }
 }

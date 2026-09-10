@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 nul
 church-accounting-team-calendar-maker/
+.verification/

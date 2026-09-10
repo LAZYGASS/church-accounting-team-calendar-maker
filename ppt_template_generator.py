@@ -73,7 +73,7 @@ class BudgetCalendarTemplate:
                 'committee_day': 마지막주 전주 일요일
             }
         """
-        cal = calendar.monthcalendar(year, month)
+        cal = calendar.Calendar(firstweekday=calendar.MONDAY).monthdayscalendar(year, month)
 
         # 1. 예산지급일: 둘째주/넷째주 화요일
         execution_days = []
@@ -102,20 +102,10 @@ class BudgetCalendarTemplate:
             if saturday_date.month == month:
                 approval_days.append(saturday_date.day)
         
-        # 3. 운영위원회의: 마지막주 전주 일요일
-        committee_day = None
-        
-        # 마지막 주 찾기
-        last_week_idx = len(cal) - 1
-        while last_week_idx >= 0 and all(day == 0 for day in cal[last_week_idx]):
-            last_week_idx -= 1
-        
-        # 마지막주 전주 일요일
-        if last_week_idx >= 1:
-            prev_week = cal[last_week_idx - 1]
-            sunday = prev_week[0]  # 일요일 (인덱스 0)
-            if sunday != 0:
-                committee_day = sunday
+        # 전역 주 시작 설정에 영향받지 않도록 실제 일요일 날짜로 계산한다.
+        sundays = [day for day in range(1, calendar.monthrange(year, month)[1] + 1)
+                   if calendar.weekday(year, month, day) == calendar.SUNDAY]
+        committee_day = sundays[-2]
         
         return {
             'execution_days': execution_days,
@@ -230,7 +220,8 @@ class BudgetCalendarTemplate:
     def _add_calendar_table(self, slide, year, month, approval_days, execution_days, committee_day):
         """캘린더 표 생성"""
         # 월 캘린더 정보 가져오기
-        cal = calendar.monthcalendar(year, month)
+        # 표시 요일(Sun~Sat)과 날짜 열을 일치시킨다.
+        cal = calendar.Calendar(firstweekday=calendar.SUNDAY).monthdayscalendar(year, month)
         rows = len(cal) + 1  # 헤더 포함
         cols = 7
 
@@ -341,8 +332,8 @@ class BudgetCalendarTemplate:
                         execution_positions.append((row_idx, col_idx, day))
                     else:
                         # 결재일 위치 저장 (토요일만 저장하여 금토 2칸 박스 표시)
-                        # calendar.monthcalendar()에서 토요일은 col_idx=5
-                        if approval_days and day in approval_days and col_idx == 5:  # 토요일
+                        # 일요일 시작 표에서 토요일은 마지막 열이다.
+                        if approval_days and day in approval_days and col_idx == 6:  # 토요일
                             approval_positions.append((row_idx, col_idx, day))
 
                         # 요일별 색상
