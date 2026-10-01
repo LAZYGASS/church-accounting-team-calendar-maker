@@ -217,5 +217,5 @@ Get-ChildItem outputs/generated/*.pptx | Sort-Object LastWriteTime -Descending |
 
 ---
 
-**기본 실행 파일 저장 위치**: 프로젝트의 **`outputs/generated/`**  
+**기본 실행 파일 저장 위치**: 프로젝트의 **`outputs/generated/`**
 **예**: `C:\Users\jihyun sim\Desktop\church-accountingteam-calendar\outputs\generated\2026_Budget_Calendar_YYYYMMDD_HHMMSS.pptx`

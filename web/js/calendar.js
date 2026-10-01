@@ -1,3 +1,21 @@
+const CALENDAR_CONFIG = Object.freeze({
+    MIN_YEAR: 1900,
+    MAX_YEAR: 9999,
+    MONTHS_PER_YEAR: 12,
+    EXPORT_WIDTH: 800,
+    EXPORT_VIEWPORT_WIDTH: 1024,
+    EXPORT_SCALE: 2,
+    DOWNLOAD_URL_LIFETIME_MS: 60000,
+    BACKGROUND_COLOR: '#F4F8FB'
+});
+
+const validateCalendarDate = (year, month) => {
+    if (!Number.isInteger(year) || year < CALENDAR_CONFIG.MIN_YEAR || year > CALENDAR_CONFIG.MAX_YEAR ||
+        !Number.isInteger(month) || month < 1 || month > CALENDAR_CONFIG.MONTHS_PER_YEAR) {
+        throw new RangeError('올바른 연도와 월을 입력해 주세요.');
+    }
+};
+
 // ===== 날짜 계산 함수 =====
 
 /**
@@ -103,6 +121,7 @@ function getCommitteeDay(year, month) {
  * 전체 일정 계산
  */
 function calculateSchedule(year, month) {
+    validateCalendarDate(year, month);
     const executionDays = getExecutionDays(year, month);
     const approvalDays = getApprovalDays(year, month, executionDays);
     const committeeDay = getCommitteeDay(year, month);
@@ -138,7 +157,7 @@ function generateCalendar(year, month) {
 
     // 캘린더 카드 생성
     let html = `
-        <div class="calendar-card" id="calendar-${month}">
+        <div class="calendar-card" id="calendar-${month}" data-year="${year}">
             <div class="month-number">${month}</div>
             ${trialNote}
             <div class="header-box">
@@ -237,11 +256,12 @@ function generateCalendar(year, month) {
             </div>
             
             <div class="footer-note">
-                * 예산집행일: 전 주 토요일 자정까지 결재 난 건에 한해<br>
-                * 운영위원회의: 마지막주 전주 일요일
+                * 예산집행일: 둘째·넷째 ${saturdayRule ? '토요일' : '화요일'} (전 주 토요일 24:00까지 결재 완료)<br>
+                * 운영위원회의: ${year === 2026 && (month === 3 || month === 4) ? '이번 달 마지막 일요일' : '마지막 일요일의 7일 전'}
             </div>
-
-            <button class="download-btn" onclick="downloadCalendarImage(${month})">
+            
+            <p class="download-status" role="status" aria-live="polite" data-html2canvas-ignore="true"></p>
+            <button data-html2canvas-ignore="true" class="download-btn" onclick="downloadCalendarImage(${month})">
                 ${month}월 이미지 다운로드
             </button>
         </div>
@@ -278,33 +298,68 @@ function generateAllCalendars(year) {
 /**
  * 특정 월 캘린더를 이미지로 다운로드
  */
-function downloadCalendarImage(month) {
+const downloadCalendarImage = async (month) => {
     const calendarElement = document.getElementById(`calendar-${month}`);
+    if (!calendarElement) return;
+    const downloadButton = calendarElement.querySelector('.download-btn');
+    const statusElement = calendarElement.querySelector('.download-status');
+    if (downloadButton.disabled) return;
 
-    // 다운로드 버튼 임시 숨김
-    const downloadBtn = calendarElement.querySelector('.download-btn');
-    downloadBtn.style.display = 'none';
-
-    html2canvas(calendarElement, {
-        scale: 2, // 고해상도
-        backgroundColor: '#F4F8FB',
-        logging: false
-    }).then(canvas => {
-        // 다운로드 버튼 다시 표시
-        downloadBtn.style.display = 'block';
-
-        // 이미지 다운로드
+    // 선택창이 바뀌어도 실제로 표시된 달력의 연도로 저장한다.
+    const displayedYear = Number(calendarElement.dataset.year);
+    const originalLabel = downloadButton.textContent;
+    downloadButton.disabled = true;
+    downloadButton.textContent = '이미지 생성 중…';
+    statusElement.textContent = '';
+    try {
+        validateCalendarDate(displayedYear, month);
+        if (typeof html2canvas !== 'function') {
+            throw new Error('이미지 도구를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요.');
+        }
+        await document.fonts.ready;
+        const canvas = await html2canvas(calendarElement, {
+            scale: CALENDAR_CONFIG.EXPORT_SCALE,
+            backgroundColor: CALENDAR_CONFIG.BACKGROUND_COLOR,
+            logging: false,
+            windowWidth: CALENDAR_CONFIG.EXPORT_VIEWPORT_WIDTH,
+            // 작은 화면에서도 저장본은 기존 800px 디자인을 유지한다.
+            onclone: (clonedDocument) => {
+                const clonedCalendar = clonedDocument.getElementById(calendarElement.id);
+                clonedCalendar.style.width = `${CALENDAR_CONFIG.EXPORT_WIDTH}px`;
+                clonedCalendar.style.maxWidth = 'none';
+            }
+        });
+        const imageBlob = await new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error('이미지 파일 생성에 실패했습니다.'));
+            }, 'image/png');
+        });
+        const imageUrl = URL.createObjectURL(imageBlob);
         const link = document.createElement('a');
-        const year = document.getElementById('year-select').value;
-        link.download = `${year}_${String(month).padStart(2, '0')}_예산집행캘린더.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    });
-}
+        link.download = `${displayedYear}_${String(month).padStart(2, '0')}_예산집행캘린더.png`;
+        link.href = imageUrl;
+        try {
+            document.body.appendChild(link);
+            link.click();
+        } finally {
+            link.remove();
+            // 브라우저가 파일을 읽기 전에 URL을 해제하지 않는다.
+            setTimeout(() => URL.revokeObjectURL(imageUrl), CALENDAR_CONFIG.DOWNLOAD_URL_LIFETIME_MS);
+        }
+        statusElement.textContent = '이미지 저장을 요청했습니다.';
+    } catch (error) {
+        console.error('캘린더 이미지 생성 실패:', error);
+        statusElement.textContent = error instanceof Error && typeof html2canvas !== 'function'
+            ? error.message
+            : '이미지 생성에 실패했습니다. 다시 시도해 주세요.';
+    } finally {
+        downloadButton.disabled = false;
+        downloadButton.textContent = originalLabel;
+    }
+};
 
-// ===== 초기화 =====
-
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const yearSelect = document.getElementById('year-select');
     const generateBtn = document.getElementById('generate-btn');
 

@@ -5,3 +5,4 @@ church-accounting-team-calendar-maker/
 
 # Local generated presentations (existing deliverables in outputs/ are retained)
 /outputs/generated/
+.verification/
