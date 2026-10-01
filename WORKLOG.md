@@ -5,7 +5,7 @@
 - 사용자의 요청에 따라 모든 Codex 프로젝트에서 작업 단위로 검증 후 커밋·push하도록 전역 ~/.codex/AGENTS.md를 갱신했다. 이 저장소의 AGENTS.md와 README에도 기록했다.
 - 기존 폴더 정리 변경을 포함해 반영하며, 개인 설정인 .vscode/는 커밋 대상에서 제외한다.
 - 원격의 기존 수정 사항을 보존해 병합했다. Node 테스트 4건, Python 일정 테스트 1건(2,424개 조합), 실제 PPT 표 생성 테스트 1건(12개월)이 통과했다.
-- GitHub의 한글 Description을 갱신하고 church Topic을 추가했다. 기존 TASKS.md의 다운로드 실제 저장 미검증 항목은 유지한다.
+- GitHub의 한글 Description을 갱신하고 church Topic을 추가했다. push 후 원격 커밋, AGENTS·README·TODO·WORKLOG의 blob SHA 및 메타데이터를 확인했다. 기존 TASKS.md의 다운로드 실제 저장 미검증 항목은 유지한다.
 
 ## 2026-10-01 — 폴더 정리
 
