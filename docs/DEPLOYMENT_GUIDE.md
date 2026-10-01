@@ -41,7 +41,8 @@ church-accounting-team-calendar-maker/
 │   └── js/
 │       └── calendar.js         # 캘린더 생성 로직 (★ 수정)
 ├── README.md
-└── DEPLOYMENT_GUIDE.md         # 이 문서
+└── docs/
+    └── DEPLOYMENT_GUIDE.md     # 이 문서
 ```
 
 ### 배포 전후 비교

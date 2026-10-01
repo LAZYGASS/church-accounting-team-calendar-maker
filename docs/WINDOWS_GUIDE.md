@@ -21,18 +21,20 @@ pip install python-pptx
 ---
 
 ### 3단계: 스크립트 실행
+
+프로젝트 루트에서 실행합니다. 새 PPT는 `outputs/generated/`에 저장됩니다.
 ```powershell
 python ppt_template_generator.py
 ```
 
 **실행 결과:**
 ```
-✅ PPT 생성 완료: 2026년_예산집행캘린더_전체.pptx
+✅ PPT 생성 완료: 2026_Budget_Calendar_YYYYMMDD_HHMMSS.pptx
 📊 슬라이드 수: 12
-💾 저장 위치: C:\Users\jihyun sim\Desktop\church-accountingteam-calendar\2026년_예산집행캘린더_전체.pptx
+💾 저장 위치: C:\Users\jihyun sim\Desktop\church-accountingteam-calendar\outputs\generated\2026_Budget_Calendar_YYYYMMDD_HHMMSS.pptx
 ```
 
-파일이 **현재 폴더**에 생성됩니다! 📁
+파일이 프로젝트의 **`outputs/generated/` 폴더**에 생성됩니다! 📁
 
 ---
 
@@ -75,7 +77,7 @@ py -m pip install python-pptx
 ### ❌ 문제 4: "파일 경로 오류"
 
 **해결:**
-- 파일이 **현재 폴더**에 저장됩니다
+- 기본 실행 결과는 프로젝트의 **`outputs/generated/`**에 저장됩니다
 - 스크립트와 같은 폴더에서 실행하세요
 
 ```powershell
@@ -83,7 +85,7 @@ py -m pip install python-pptx
 pwd
 
 # 파일 확인
-dir *.pptx
+dir outputs/generated/*.pptx
 ```
 
 ---
@@ -139,7 +141,7 @@ dir
 python ppt_template_generator.py
 
 # 4. 생성된 파일 확인
-dir *.pptx
+dir outputs/generated/*.pptx
 ```
 
 ---
@@ -167,7 +169,7 @@ template.save(output)
 import os
 import subprocess
 
-filename = "2026년_예산집행캘린더_전체.pptx"
+filename = "2026_Budget_Calendar_YYYYMMDD_HHMMSS.pptx"
 template.save(filename)
 
 # Windows에서 자동으로 열기
@@ -187,10 +189,10 @@ pip install python-pptx
 python ppt_template_generator.py
 
 # === 확인 ===
-dir *.pptx
+dir outputs/generated/*.pptx
 
 # === 열기 ===
-start 2026년_예산집행캘린더_전체.pptx
+Get-ChildItem outputs/generated/*.pptx | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Invoke-Item
 ```
 
 ---
@@ -208,12 +210,12 @@ start 2026년_예산집행캘린더_전체.pptx
 - [ ] Python 설치됨 (`python --version` 성공)
 - [ ] python-pptx 설치됨 (`pip show python-pptx` 성공)
 - [ ] 스크립트 실행됨 (오류 없음)
-- [ ] PPT 파일 생성됨 (`dir *.pptx`로 확인)
+- [ ] PPT 파일 생성됨 (`dir outputs/generated/*.pptx`로 확인)
 - [ ] PPT 파일 열림 (정상 표시)
 
 모두 체크되면 완료! 🎉
 
 ---
 
-**파일 저장 위치**: 스크립트가 있는 폴더와 **같은 위치**  
-**예**: `C:\Users\jihyun sim\Desktop\church-accountingteam-calendar\2026년_예산집행캘린더_전체.pptx`
+**기본 실행 파일 저장 위치**: 프로젝트의 **`outputs/generated/`**  
+**예**: `C:\Users\jihyun sim\Desktop\church-accountingteam-calendar\outputs\generated\2026_Budget_Calendar_YYYYMMDD_HHMMSS.pptx`

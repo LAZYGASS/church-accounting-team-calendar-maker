@@ -16,6 +16,7 @@ from pptx.oxml import parse_xml
 import calendar
 from datetime import datetime, timedelta
 import os
+from pathlib import Path
 
 class BudgetCalendarTemplate:
     """예산집행 캘린더 PPT 템플릿"""
@@ -625,7 +626,9 @@ if __name__ == "__main__":
     # 저장
     import time
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_file = f"2026_Budget_Calendar_{timestamp}.pptx"
+    output_dir = Path(__file__).resolve().parent / "outputs" / "generated"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / f"2026_Budget_Calendar_{timestamp}.pptx"
     template.save(output_file)
 
     print(f"\n{'=' * 60}")

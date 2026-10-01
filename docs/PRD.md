@@ -391,7 +391,7 @@ Acceptance Criteria:
 ### 12.2 참조 문서
 - `ppt_template_generator.py`: 메인 소스 코드
 - `변경내역.md`: 변경 이력 문서
-- `README.md`: 사용자 가이드 (향후 작성)
+- [README.md](../README.md): 프로젝트 시작 안내
 
 ### 12.3 승인 기록
 | 역할 | 이름 | 승인일 | 서명 |
